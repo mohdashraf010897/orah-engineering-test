@@ -19,6 +19,7 @@ const SORT_BY_OPTIONS = [
 
 export const HomeBoardPage: React.FC = () => {
   const [isRollMode, setIsRollMode] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
   const [sortBy, setSortBy] = useState<string>(SORT_BY_OPTIONS[0].value)
   const [filteredStudents, setFilteredStudents] = useState<Person[]>([])
   const [sortAsc, setSortAsc] = useState(true)
@@ -34,6 +35,15 @@ export const HomeBoardPage: React.FC = () => {
       setFilteredStudents(studentsList)
     }
   }, [data])
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const term = e.target.value
+    setSearchTerm(term)
+    const filtered = data?.students.filter(
+      (user: Person) => (user as any)["first_name"].toLowerCase().includes(term.toLowerCase()) || (user as any)["last_name"].toLowerCase().includes(term.toLowerCase())
+    )
+    setFilteredStudents(filtered ?? [])
+  }
 
   const onToolbarAction = (action: ToolbarAction, value?: string) => {
     if (action === "roll") {
@@ -67,7 +77,7 @@ export const HomeBoardPage: React.FC = () => {
   return (
     <>
       <S.PageContainer>
-        <Toolbar onItemClick={onToolbarAction} sortBy={sortBy} handleSortToggle={() => setSortAsc((prev: boolean) => !prev)} sortAsc={sortAsc} />
+        <Toolbar onItemClick={onToolbarAction} sortBy={sortBy} handleSortToggle={() => setSortAsc((prev: boolean) => !prev)} sortAsc={sortAsc} handleSearch={handleSearch} />
 
         {loadState === "loading" && (
           <CenteredContainer>
@@ -100,9 +110,10 @@ interface ToolbarProps {
   sortBy: string
   sortAsc: boolean
   handleSortToggle: () => void
+  handleSearch: (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 const Toolbar: React.FC<ToolbarProps> = (props) => {
-  const { onItemClick, sortBy, sortAsc, handleSortToggle } = props
+  const { onItemClick, sortBy, sortAsc, handleSortToggle, handleSearch } = props
   return (
     <S.ToolbarContainer>
       <div>
@@ -116,7 +127,9 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
         </select>
         <button onClick={handleSortToggle}>{sortAsc ? <FontAwesomeIcon icon={faSortAlphaDown} /> : <FontAwesomeIcon icon={faSortAlphaUp} />}</button>
       </div>
-      <div>Search</div>
+      <div>
+        <input type="text" placeholder="Search by name" onChange={handleSearch} />
+      </div>
       <S.Button onClick={() => onItemClick("roll")}>Start Roll</S.Button>
     </S.ToolbarContainer>
   )
