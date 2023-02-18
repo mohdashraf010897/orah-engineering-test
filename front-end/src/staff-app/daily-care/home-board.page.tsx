@@ -13,8 +13,8 @@ import { StudentListTile } from "staff-app/components/student-list-tile/student-
 import { ActiveRollOverlay, ActiveRollAction } from "staff-app/components/active-roll-overlay/active-roll-overlay.component"
 
 const SORT_BY_OPTIONS = [
-  { label: "First name", value: "firstName" },
-  { label: "Last name", value: "lastName" },
+  { label: "First name", value: "first_name" },
+  { label: "Last name", value: "last_name" },
 ]
 
 export const HomeBoardPage: React.FC = () => {
@@ -45,6 +45,17 @@ export const HomeBoardPage: React.FC = () => {
     }
   }
 
+  const sortedUsers = data?.students.sort((a, b) => {
+    const aVal = sortBy === SORT_BY_OPTIONS[0].value ? a.first_name : a.last_name
+    const bVal = sortBy === SORT_BY_OPTIONS[0].value ? b.first_name : b.last_name
+    if (aVal < bVal) {
+      return sortAsc ? -1 : 1
+    }
+    if (aVal > bVal) {
+      return sortAsc ? 1 : -1
+    }
+    return 0
+  })
   return (
     <>
       <S.PageContainer>
@@ -56,9 +67,9 @@ export const HomeBoardPage: React.FC = () => {
           </CenteredContainer>
         )}
 
-        {loadState === "loaded" && data?.students && (
+        {loadState === "loaded" && sortedUsers && (
           <>
-            {data.students.map((s) => (
+            {sortedUsers.map((s) => (
               <StudentListTile key={s.id} isRollMode={isRollMode} student={s} />
             ))}
           </>
