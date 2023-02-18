@@ -14,6 +14,7 @@ import { StudentListTile } from "staff-app/components/student-list-tile/student-
 import { ActiveRollOverlay, ActiveRollAction } from "staff-app/components/active-roll-overlay/active-roll-overlay.component"
 import { useDebounce } from "shared/hooks/use-debounce"
 import { Select } from "@material-ui/core"
+import { RollInput } from "shared/models/roll"
 
 const SORT_BY_OPTIONS = [
   { label: "First name", value: "first_name" },
@@ -26,6 +27,7 @@ export const HomeBoardPage: React.FC = () => {
   const [filteredStudents, setFilteredStudents] = useState<Person[]>([])
   const [sortAsc, setSortAsc] = useState(true)
   const [getStudents, data, loadState] = useApi<{ students: Person[] }>({ url: "get-homeboard-students" })
+  const [attendance, setAttendance] = useState<RollInput>({ student_roll_states: [] })
 
   useEffect(() => {
     void getStudents()
@@ -88,7 +90,7 @@ export const HomeBoardPage: React.FC = () => {
         {loadState === "loaded" && sortedUsers && (
           <>
             {sortedUsers.map((s) => (
-              <StudentListTile key={s.id} isRollMode={isRollMode} student={s} />
+              <StudentListTile key={s.id} isRollMode={isRollMode} student={s} attendance={attendance} setAttendance={setAttendance} />
             ))}
           </>
         )}
@@ -99,7 +101,7 @@ export const HomeBoardPage: React.FC = () => {
           </CenteredContainer>
         )}
       </S.PageContainer>
-      <ActiveRollOverlay isActive={isRollMode} onItemClick={onActiveRollAction} />
+      <ActiveRollOverlay isActive={isRollMode} onItemClick={onActiveRollAction} attendance={attendance} />
     </>
   )
 }

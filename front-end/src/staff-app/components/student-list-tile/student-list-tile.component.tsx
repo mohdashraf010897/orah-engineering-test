@@ -1,16 +1,34 @@
-import React from "react"
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react"
 import styled from "styled-components"
 import { Spacing, BorderRadius, FontWeight } from "shared/styles/styles"
 import { Images } from "assets/images"
 import { Colors } from "shared/styles/colors"
 import { Person, PersonHelper } from "shared/models/person"
 import { RollStateSwitcher } from "staff-app/components/roll-state/roll-state-switcher.component"
+import { RollInput, RolllStateType } from "shared/models/roll"
 
 interface Props {
   isRollMode?: boolean
   student: Person
+  attendance: RollInput
+  setAttendance: Dispatch<SetStateAction<RollInput>>
 }
-export const StudentListTile: React.FC<Props> = ({ isRollMode, student }) => {
+export const StudentListTile: React.FC<Props> = ({ isRollMode, student, attendance, setAttendance }) => {
+  const [roll, setRoll] = useState<RolllStateType>("unmark")
+
+  useEffect(() => {
+    const checkStudentTookAttendance = attendance.student_roll_states.findIndex((item) => item.student_id === student.id)
+
+    if (checkStudentTookAttendance === -1) {
+      const data: RollInput = { ...attendance }
+      setAttendance({ student_roll_states: [...data.student_roll_states, { student_id: student.id, roll_state: roll }] })
+    } else if (checkStudentTookAttendance >= 0) {
+      const updatedRollStates = attendance.student_roll_states.map((item) => ({ ...item, ...(item.student_id === student.id ? { roll_state: roll } : {}) }))
+      const data: RollInput = { student_roll_states: updatedRollStates }
+      setAttendance(data)
+    }
+  }, [roll])
+
   return (
     <S.Container>
       <S.Avatar url={Images.avatar}></S.Avatar>
@@ -19,7 +37,7 @@ export const StudentListTile: React.FC<Props> = ({ isRollMode, student }) => {
       </S.Content>
       {isRollMode && (
         <S.Roll>
-          <RollStateSwitcher />
+          <RollStateSwitcher onStateChange={setRoll} />
         </S.Roll>
       )}
     </S.Container>

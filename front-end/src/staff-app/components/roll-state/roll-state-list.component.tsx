@@ -57,7 +57,7 @@ const S = {
   `,
 }
 
-interface StateList {
+export interface StateList {
   type: ItemType
   count: number
 }
