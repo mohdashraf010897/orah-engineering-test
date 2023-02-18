@@ -20,12 +20,20 @@ const SORT_BY_OPTIONS = [
 export const HomeBoardPage: React.FC = () => {
   const [isRollMode, setIsRollMode] = useState(false)
   const [sortBy, setSortBy] = useState<string>(SORT_BY_OPTIONS[0].value)
+  const [filteredStudents, setFilteredStudents] = useState<Person[]>([])
   const [sortAsc, setSortAsc] = useState(true)
   const [getStudents, data, loadState] = useApi<{ students: Person[] }>({ url: "get-homeboard-students" })
 
   useEffect(() => {
     void getStudents()
   }, [getStudents])
+
+  useEffect(() => {
+    if (loadState === "loaded") {
+      const studentsList: Person[] = data!.students
+      setFilteredStudents(studentsList)
+    }
+  }, [data])
 
   const onToolbarAction = (action: ToolbarAction, value?: string) => {
     if (action === "roll") {
@@ -45,7 +53,7 @@ export const HomeBoardPage: React.FC = () => {
     }
   }
 
-  const sortedUsers = data?.students.sort((a, b) => {
+  const sortedUsers = filteredStudents.sort((a, b) => {
     const aVal = sortBy === SORT_BY_OPTIONS[0].value ? a.first_name : a.last_name
     const bVal = sortBy === SORT_BY_OPTIONS[0].value ? b.first_name : b.last_name
     if (aVal < bVal) {
