@@ -11,6 +11,7 @@ import { Person } from "shared/models/person"
 import { useApi } from "shared/hooks/use-api"
 import { StudentListTile } from "staff-app/components/student-list-tile/student-list-tile.component"
 import { ActiveRollOverlay, ActiveRollAction } from "staff-app/components/active-roll-overlay/active-roll-overlay.component"
+import { useDebounce } from "shared/hooks/use-debounce"
 
 const SORT_BY_OPTIONS = [
   { label: "First name", value: "first_name" },
@@ -19,7 +20,6 @@ const SORT_BY_OPTIONS = [
 
 export const HomeBoardPage: React.FC = () => {
   const [isRollMode, setIsRollMode] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
   const [sortBy, setSortBy] = useState<string>(SORT_BY_OPTIONS[0].value)
   const [filteredStudents, setFilteredStudents] = useState<Person[]>([])
   const [sortAsc, setSortAsc] = useState(true)
@@ -36,14 +36,12 @@ export const HomeBoardPage: React.FC = () => {
     }
   }, [data])
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const term = e.target.value
-    setSearchTerm(term)
+  const debouncedSearch = useDebounce((term: string) => {
     const filtered = data?.students.filter(
       (user: Person) => (user as any)["first_name"].toLowerCase().includes(term.toLowerCase()) || (user as any)["last_name"].toLowerCase().includes(term.toLowerCase())
     )
     setFilteredStudents(filtered ?? [])
-  }
+  }, 300)
 
   const onToolbarAction = (action: ToolbarAction, value?: string) => {
     if (action === "roll") {
@@ -77,7 +75,7 @@ export const HomeBoardPage: React.FC = () => {
   return (
     <>
       <S.PageContainer>
-        <Toolbar onItemClick={onToolbarAction} sortBy={sortBy} handleSortToggle={() => setSortAsc((prev: boolean) => !prev)} sortAsc={sortAsc} handleSearch={handleSearch} />
+        <Toolbar onItemClick={onToolbarAction} sortBy={sortBy} handleSortToggle={() => setSortAsc((prev: boolean) => !prev)} sortAsc={sortAsc} handleSearchCB={debouncedSearch} />
 
         {loadState === "loading" && (
           <CenteredContainer>
@@ -110,10 +108,16 @@ interface ToolbarProps {
   sortBy: string
   sortAsc: boolean
   handleSortToggle: () => void
-  handleSearch: (e: React.ChangeEvent<HTMLInputElement>) => void
+  handleSearchCB: (value: string) => void
 }
 const Toolbar: React.FC<ToolbarProps> = (props) => {
-  const { onItemClick, sortBy, sortAsc, handleSortToggle, handleSearch } = props
+  const { onItemClick, sortBy, sortAsc, handleSortToggle, handleSearchCB } = props
+  const [searchTerm, setSearchTerm] = useState("")
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const term = e.target.value
+    setSearchTerm(term)
+    handleSearchCB(term)
+  }
   return (
     <S.ToolbarContainer>
       <div>
