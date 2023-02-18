@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react"
 import styled from "styled-components"
 import Button from "@material-ui/core/ButtonBase"
+import Input from "@material-ui/core/InputBase"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faSortAlphaDown, faSortAlphaUp } from "@fortawesome/free-solid-svg-icons"
+import { faSortAlphaDown, faSortAlphaUp, faSearch } from "@fortawesome/free-solid-svg-icons"
 
 import { Spacing, BorderRadius, FontWeight } from "shared/styles/styles"
 import { Colors } from "shared/styles/colors"
@@ -12,6 +13,7 @@ import { useApi } from "shared/hooks/use-api"
 import { StudentListTile } from "staff-app/components/student-list-tile/student-list-tile.component"
 import { ActiveRollOverlay, ActiveRollAction } from "staff-app/components/active-roll-overlay/active-roll-overlay.component"
 import { useDebounce } from "shared/hooks/use-debounce"
+import { Select } from "@material-ui/core"
 
 const SORT_BY_OPTIONS = [
   { label: "First name", value: "first_name" },
@@ -120,20 +122,23 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
   }
   return (
     <S.ToolbarContainer>
-      <div>
+      <S.SortWrapper>
         <label>Sort by:</label>
-        <select value={sortBy} onChange={(e) => onItemClick("sort", e.target.value)}>
+        <Select value={sortBy} onChange={(e: React.ChangeEvent<{ name?: string | undefined; value: unknown }>) => onItemClick("sort", e.target.value as string)}>
           {SORT_BY_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
           ))}
-        </select>
+        </Select>
         <button onClick={handleSortToggle}>{sortAsc ? <FontAwesomeIcon icon={faSortAlphaDown} /> : <FontAwesomeIcon icon={faSortAlphaUp} />}</button>
-      </div>
-      <div>
-        <input type="text" placeholder="Search by name" onChange={handleSearch} />
-      </div>
+      </S.SortWrapper>
+      <S.InputWrapper>
+        <div style={{ marginRight: "10px" }}>
+          <FontAwesomeIcon icon={faSearch} />
+        </div>
+        <S.Input type="text" placeholder="Search by name" onChange={handleSearch} />
+      </S.InputWrapper>
       <S.Button onClick={() => onItemClick("roll")}>Start Roll</S.Button>
     </S.ToolbarContainer>
   )
@@ -161,6 +166,48 @@ const S = {
       padding: ${Spacing.u2};
       font-weight: ${FontWeight.strong};
       border-radius: ${BorderRadius.default};
+    }
+  `,
+  Input: styled(Input)`
+    && {
+      color: white;
+      width: 120px;
+    }
+  `,
+  InputWrapper: styled("div")`
+    border-bottom: 1px solid white;
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+  `,
+  SortWrapper: styled("div")`
+    display: flex;
+    align-items: center;
+    cursor: default;
+    label {
+      margin-right: 10px;
+    }
+
+    .MuiSelect-icon {
+      color: white;
+    }
+    .MuiSelect-select,
+    .MuiSelect-nativeInput {
+      color: white;
+      border-color: white;
+      cursor: pointer;
+    }
+
+    .MuiInput-underline {
+      border-bottom: 0.5px solid white !important;
+      &:before {
+        border-bottom: 1px solid white !important;
+      }
+    }
+
+    button {
+      height: 31px;
+      cursor: pointer;
     }
   `,
 }
