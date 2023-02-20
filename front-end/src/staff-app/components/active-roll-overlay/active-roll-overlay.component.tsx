@@ -1,9 +1,11 @@
-import React from "react"
+import React, { useEffect } from "react"
 import styled from "styled-components"
 import Button from "@material-ui/core/Button"
 import { BorderRadius, Spacing } from "shared/styles/styles"
 import { RollStateList, StateList } from "staff-app/components/roll-state/roll-state-list.component"
 import { RollInput, RolllStateType } from "shared/models/roll"
+import { useApi } from "shared/hooks/use-api"
+import { Activity } from "shared/models/activity"
 
 export type ActiveRollAction = "filter" | "exit"
 interface Props {
@@ -26,6 +28,15 @@ export const ActiveRollOverlay: React.FC<Props> = (props) => {
     })) as StateList[]
   }
 
+  const [saveRollApi, data, loadState] = useApi<{ students: Activity[] }>({ url: "save-roll" })
+  const saveRollState = () => {
+    saveRollApi(attendance).then((res) => console.log({ res }))
+  }
+
+  useEffect(() => {
+    console.log({ data })
+  }, [data])
+
   return (
     <S.Overlay isActive={isActive}>
       <S.Content>
@@ -36,7 +47,7 @@ export const ActiveRollOverlay: React.FC<Props> = (props) => {
             <Button color="inherit" onClick={() => onItemClick("exit")}>
               Exit
             </Button>
-            <Button color="inherit" style={{ marginLeft: Spacing.u2 }} onClick={() => onItemClick("exit")}>
+            <Button color="inherit" style={{ marginLeft: Spacing.u2 }} onClick={saveRollState}>
               Complete
             </Button>
           </div>
