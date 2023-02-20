@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react"
+import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
 import styled from "styled-components"
 import { Spacing, BorderRadius, FontWeight } from "shared/styles/styles"
 import { Images } from "assets/images"
@@ -15,19 +15,26 @@ interface Props {
 }
 export const StudentListTile: React.FC<Props> = ({ isRollMode, student, attendance, setAttendance }) => {
   const [roll, setRoll] = useState<RolllStateType>("unmark")
+  const hasMounted = useRef<Boolean>(false)
 
   useEffect(() => {
-    const checkStudentTookAttendance = attendance.student_roll_states.findIndex((item) => item.student_id === student.id)
+    if (hasMounted.current) {
+      const checkStudentTookAttendance = attendance.student_roll_states.findIndex((item) => item.student_id === student.id)
 
-    if (checkStudentTookAttendance === -1) {
-      const data: RollInput = { ...attendance }
-      setAttendance({ student_roll_states: [...data.student_roll_states, { student_id: student.id, roll_state: roll }] })
-    } else if (checkStudentTookAttendance >= 0) {
-      const updatedRollStates = attendance.student_roll_states.map((item) => ({ ...item, ...(item.student_id === student.id ? { roll_state: roll } : {}) }))
-      const data: RollInput = { student_roll_states: updatedRollStates }
-      setAttendance(data)
+      if (checkStudentTookAttendance === -1) {
+        const data: RollInput = { ...attendance }
+        setAttendance({ student_roll_states: [...data.student_roll_states, { student_id: student.id, roll_state: roll }] })
+      } else if (checkStudentTookAttendance >= 0) {
+        const updatedRollStates = attendance.student_roll_states.map((item) => ({ ...item, ...(item.student_id === student.id ? { roll_state: roll } : {}) }))
+        const data: RollInput = { student_roll_states: updatedRollStates }
+        setAttendance(data)
+      }
     }
   }, [roll])
+
+  useEffect(() => {
+    hasMounted.current = true
+  }, [])
 
   return (
     <S.Container>
@@ -37,7 +44,7 @@ export const StudentListTile: React.FC<Props> = ({ isRollMode, student, attendan
       </S.Content>
       {isRollMode && (
         <S.Roll>
-          <RollStateSwitcher onStateChange={setRoll} />
+          <RollStateSwitcher initialState={attendance.student_roll_states.find((t) => t.student_id === student.id)?.roll_state} onStateChange={setRoll} />
         </S.Roll>
       )}
     </S.Container>

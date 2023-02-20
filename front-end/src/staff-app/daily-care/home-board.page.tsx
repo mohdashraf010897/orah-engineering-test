@@ -14,20 +14,23 @@ import { StudentListTile } from "staff-app/components/student-list-tile/student-
 import { ActiveRollOverlay, ActiveRollAction } from "staff-app/components/active-roll-overlay/active-roll-overlay.component"
 import { useDebounce } from "shared/hooks/use-debounce"
 import { Select } from "@material-ui/core"
-import { RollInput } from "shared/models/roll"
+import { RollInput, RolllStateType } from "shared/models/roll"
 
 const SORT_BY_OPTIONS = [
   { label: "First name", value: "first_name" },
   { label: "Last name", value: "last_name" },
 ]
 
+type studentsState = { [key: number]: Person }
+
 export const HomeBoardPage: React.FC = () => {
   const [isRollMode, setIsRollMode] = useState(false)
   const [sortBy, setSortBy] = useState<string>(SORT_BY_OPTIONS[0].value)
-  const [filteredStudents, setFilteredStudents] = useState<Person[]>([])
+  const [filteredStudents, setFilteredStudents] = useState<studentsState>({})
   const [sortAsc, setSortAsc] = useState(true)
   const [getStudents, data, loadState] = useApi<{ students: Person[] }>({ url: "get-homeboard-students" })
   const [attendance, setAttendance] = useState<RollInput>({ student_roll_states: [] })
+  const [selectedRollState, setSelectedRollState] = useState<RolllStateType | "all" | undefined>()
 
   useEffect(() => {
     void getStudents()
@@ -36,15 +39,26 @@ export const HomeBoardPage: React.FC = () => {
   useEffect(() => {
     if (loadState === "loaded") {
       const studentsList: Person[] = data!.students
-      setFilteredStudents(studentsList)
+
+      const newStudentsObject: studentsState = {}
+      studentsList.forEach((st) => {
+        newStudentsObject[st.id] = { ...st }
+      })
+      setFilteredStudents(newStudentsObject)
     }
-  }, [data])
+  }, [data, selectedRollState])
 
   const debouncedSearch = useDebounce((term: string) => {
     const filtered = data?.students.filter(
       (user: Person) => (user as any)["first_name"].toLowerCase().includes(term.toLowerCase()) || (user as any)["last_name"].toLowerCase().includes(term.toLowerCase())
     )
-    setFilteredStudents(filtered ?? [])
+    if (filtered) {
+      const newFilteredStudentsObject: studentsState = {}
+      filtered.forEach((st) => {
+        newFilteredStudentsObject[st.id] = { ...st }
+      })
+      setFilteredStudents(newFilteredStudentsObject)
+    }
   }, 300)
 
   const onToolbarAction = (action: ToolbarAction, value?: string) => {
@@ -65,7 +79,23 @@ export const HomeBoardPage: React.FC = () => {
     }
   }
 
-  const sortedUsers = filteredStudents.sort((a, b) => {
+  const filterByRollState = (students: studentsState) => {
+    if (!selectedRollState || selectedRollState === "all" || selectedRollState === "unmark") return students
+
+    if (selectedRollState) {
+      const finalStudents: studentsState = {}
+
+      attendance.student_roll_states.forEach((t) => {
+        if (t.roll_state === selectedRollState) {
+          finalStudents[t.student_id] = filteredStudents[t.student_id]
+        }
+      })
+
+      return finalStudents
+    }
+  }
+
+  const sortedUsers = Object.values(filterByRollState(filteredStudents) ?? {}).sort((a, b) => {
     const aVal = sortBy === SORT_BY_OPTIONS[0].value ? a.first_name : a.last_name
     const bVal = sortBy === SORT_BY_OPTIONS[0].value ? b.first_name : b.last_name
     if (aVal < bVal) {
@@ -76,6 +106,7 @@ export const HomeBoardPage: React.FC = () => {
     }
     return 0
   })
+
   return (
     <>
       <S.PageContainer>
@@ -101,7 +132,7 @@ export const HomeBoardPage: React.FC = () => {
           </CenteredContainer>
         )}
       </S.PageContainer>
-      <ActiveRollOverlay isActive={isRollMode} onItemClick={onActiveRollAction} attendance={attendance} />
+      <ActiveRollOverlay isActive={isRollMode} onItemClick={onActiveRollAction} attendance={attendance} setSelectedRollState={setSelectedRollState} />
     </>
   )
 }

@@ -3,22 +3,26 @@ import styled from "styled-components"
 import Button from "@material-ui/core/Button"
 import { BorderRadius, Spacing } from "shared/styles/styles"
 import { RollStateList, StateList } from "staff-app/components/roll-state/roll-state-list.component"
-import { RollInput } from "shared/models/roll"
+import { RollInput, RolllStateType } from "shared/models/roll"
 
 export type ActiveRollAction = "filter" | "exit"
 interface Props {
   isActive: boolean
   onItemClick: (action: ActiveRollAction, value?: string) => void
   attendance: RollInput
+  setSelectedRollState: (action: RolllStateType | "all") => void
 }
 
 const ATTENDANCE_TYPES = ["all", "present", "late", "absent"]
 
 export const ActiveRollOverlay: React.FC<Props> = (props) => {
-  const { isActive, onItemClick, attendance } = props
+  const { isActive, onItemClick, attendance, setSelectedRollState } = props
 
-  const getStateList = (): StateList[] => {
-    return ATTENDANCE_TYPES.map((t: string) => ({ type: t, count: attendance.student_roll_states.filter((item) => item.roll_state === t).length })) as StateList[]
+  const getStateList = (attendanceParam: RollInput): StateList[] => {
+    return ATTENDANCE_TYPES.map((t: string) => ({
+      type: t,
+      count: attendanceParam.student_roll_states.filter((item) => (t === "all" ? true : item.roll_state === t)).length,
+    })) as StateList[]
   }
 
   return (
@@ -26,7 +30,7 @@ export const ActiveRollOverlay: React.FC<Props> = (props) => {
       <S.Content>
         <div>Class Attendance</div>
         <div>
-          <RollStateList stateList={getStateList()} />
+          <RollStateList stateList={getStateList(attendance)} onItemClick={setSelectedRollState} />
           <div style={{ marginTop: Spacing.u6 }}>
             <Button color="inherit" onClick={() => onItemClick("exit")}>
               Exit
