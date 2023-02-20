@@ -9,9 +9,9 @@ interface Props {
   stateList: StateList[]
   onItemClick?: (type: ItemType) => void
   size?: number
+  totalStudents: Number
 }
-export const RollStateList: React.FC<Props> = ({ stateList, size = 14, onItemClick }) => {
-  console.log("🚀 ~ file: roll-state-list.component.tsx:14 ~ stateList:", stateList)
+export const RollStateList: React.FC<Props> = ({ stateList, size = 14, onItemClick, totalStudents }) => {
   const onClick = (type: ItemType) => {
     if (onItemClick) {
       onItemClick(type)
@@ -25,7 +25,7 @@ export const RollStateList: React.FC<Props> = ({ stateList, size = 14, onItemCli
           return (
             <S.ListItem key={i}>
               <FontAwesomeIcon icon="users" size="sm" style={{ cursor: "pointer" }} onClick={() => onClick(s.type)} />
-              <span>{s.count}</span>
+              <span>{totalStudents}</span>
             </S.ListItem>
           )
         }

@@ -11,12 +11,13 @@ interface Props {
   onItemClick: (action: ActiveRollAction, value?: string) => void
   attendance: RollInput
   setSelectedRollState: (action: RolllStateType | "all") => void
+  totalStudents: Number
 }
 
 const ATTENDANCE_TYPES = ["all", "present", "late", "absent"]
 
 export const ActiveRollOverlay: React.FC<Props> = (props) => {
-  const { isActive, onItemClick, attendance, setSelectedRollState } = props
+  const { isActive, onItemClick, attendance, setSelectedRollState, totalStudents } = props
 
   const getStateList = (attendanceParam: RollInput): StateList[] => {
     return ATTENDANCE_TYPES.map((t: string) => ({
@@ -30,7 +31,7 @@ export const ActiveRollOverlay: React.FC<Props> = (props) => {
       <S.Content>
         <div>Class Attendance</div>
         <div>
-          <RollStateList stateList={getStateList(attendance)} onItemClick={setSelectedRollState} />
+          <RollStateList stateList={getStateList(attendance)} totalStudents={totalStudents} onItemClick={setSelectedRollState} />
           <div style={{ marginTop: Spacing.u6 }}>
             <Button color="inherit" onClick={() => onItemClick("exit")}>
               Exit

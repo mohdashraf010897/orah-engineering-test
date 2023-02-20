@@ -132,7 +132,13 @@ export const HomeBoardPage: React.FC = () => {
           </CenteredContainer>
         )}
       </S.PageContainer>
-      <ActiveRollOverlay isActive={isRollMode} onItemClick={onActiveRollAction} attendance={attendance} setSelectedRollState={setSelectedRollState} />
+      <ActiveRollOverlay
+        isActive={isRollMode}
+        onItemClick={onActiveRollAction}
+        attendance={attendance}
+        setSelectedRollState={setSelectedRollState}
+        totalStudents={Object.keys(filteredStudents).length}
+      />
     </>
   )
 }
