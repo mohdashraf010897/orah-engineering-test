@@ -139,7 +139,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
         <div style={{ marginRight: "10px" }}>
           <FontAwesomeIcon icon={faSearch} />
         </div>
-        <S.Input type="text" placeholder="Search by name" onChange={handleSearch} />
+        <S.Input type="text" placeholder="Search by name" onChange={handleSearch} value={searchTerm} />
       </S.InputWrapper>
       <S.Button onClick={() => onItemClick("roll")}>Start Roll</S.Button>
     </S.ToolbarContainer>
