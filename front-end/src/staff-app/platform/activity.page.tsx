@@ -3,7 +3,7 @@ import styled from "styled-components"
 import { Spacing } from "shared/styles/styles"
 import { Activity } from "shared/models/activity"
 import { useApi } from "shared/hooks/use-api"
-import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel, Tooltip } from "@material-ui/core"
+import { Button, Dialog, List, ListItem, ListItemText, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel, Tooltip } from "@material-ui/core"
 import { Person } from "shared/models/person"
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
@@ -124,6 +124,8 @@ export const ActivityPage: React.FC = () => {
   const [getActivities, activitiesData, activitiesLoadState] = useApi<{ activity: Activity[] }>({ url: "get-activities" })
   const [getStudents, data, loadState] = useApi<{ students: Person[] }>({ url: "get-homeboard-students" })
   const [studentsNameMap, setStudentsNameMap] = useState<{ [key: number]: string }>()
+  const [modalVisible, setModalVisible] = useState<boolean>(false)
+  const [modalContent, setModalContent] = useState<[]>()
 
   const [order, setOrder] = React.useState<Order>("asc")
   const [orderBy, setOrderBy] = React.useState<keyof Data>("present")
@@ -169,6 +171,9 @@ export const ActivityPage: React.FC = () => {
         present: number
         absent: number
         late: number
+        presentStudents: number[]
+        absentStudents: number[]
+        lateStudents: number[]
       } => {
         let presentStudents: number[] = [],
           absentStudents: number[] = [],
@@ -193,6 +198,9 @@ export const ActivityPage: React.FC = () => {
           present: presentStudents.length,
           absent: absentStudents.length,
           late: lateStudents.length,
+          presentStudents,
+          absentStudents,
+          lateStudents,
         }
       }
 
@@ -206,19 +214,23 @@ export const ActivityPage: React.FC = () => {
     setOrderBy(property)
   }
 
-  function renderTooltipTitle(studentsArr: number[]) {
-    return (
-      <ol>
-        {studentsArr.map((st) => (
-          <li>{studentsNameMap?.[st] ?? st}</li>
-        ))}
-      </ol>
-    )
+  const handleClose = () => {
+    setModalVisible(false)
   }
 
   const rows = createRows()
   return (
     <S.Container>
+      <Dialog open={modalVisible} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
+        <List style={{ width: "300px", paddingLeft: "10px" }}>
+          <h3>Name List</h3>
+          {modalContent?.map((el) => (
+            <ListItem>
+              <ListItemText primary={<span>∙ {studentsNameMap?.[el]}</span>} />
+            </ListItem>
+          ))}
+        </List>
+      </Dialog>
       <TableContainer component={Paper}>
         <Table aria-label="simple table">
           <EnhancedTableHead order={order} orderBy={orderBy} onRequestSort={handleRequestSort} rowCount={rows.length} />
@@ -235,15 +247,21 @@ export const ActivityPage: React.FC = () => {
                     <>{row.name}</>
                   </Tooltip>
                 </TableCell>
-                <TableCell align="right">
-                  <S.RoundButton variant="contained">{row.present}</S.RoundButton>
-                </TableCell>
-                <TableCell align="right">
-                  <S.RoundButton variant="contained">{row.late}</S.RoundButton>
-                </TableCell>
-                <TableCell align="right">
-                  <S.RoundButton variant="contained">{row.absent}</S.RoundButton>
-                </TableCell>
+                {["present", "late", "absent"].map((elKey) => (
+                  <TableCell key={elKey} align="right">
+                    <S.RoundButton
+                      disabled={!row[elKey]}
+                      onClick={() => {
+                        if (!row[elKey]) return
+                        setModalVisible(true)
+                        setModalContent(row[`${elKey}Students`])
+                      }}
+                      variant="contained"
+                    >
+                      {row[elKey]}
+                    </S.RoundButton>
+                  </TableCell>
+                ))}
               </TableRow>
             ))}
           </TableBody>
