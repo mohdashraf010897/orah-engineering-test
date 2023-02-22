@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import styled from "styled-components"
 import Button from "@material-ui/core/Button"
 import { BorderRadius, Spacing } from "shared/styles/styles"
@@ -6,6 +6,7 @@ import { RollStateList, StateList } from "staff-app/components/roll-state/roll-s
 import { RollInput, RolllStateType } from "shared/models/roll"
 import { useApi } from "shared/hooks/use-api"
 import { Activity } from "shared/models/activity"
+import { Snackbar } from "@material-ui/core"
 
 export type ActiveRollAction = "filter" | "exit"
 interface Props {
@@ -20,6 +21,7 @@ const ATTENDANCE_TYPES = ["all", "present", "late", "absent"]
 
 export const ActiveRollOverlay: React.FC<Props> = (props) => {
   const { isActive, onItemClick, attendance, setSelectedRollState, totalStudents } = props
+  const [showSnackBar, setshowSnackBar] = useState<boolean>(false)
 
   const getStateList = (attendanceParam: RollInput): StateList[] => {
     return ATTENDANCE_TYPES.map((t: string) => ({
@@ -30,15 +32,27 @@ export const ActiveRollOverlay: React.FC<Props> = (props) => {
 
   const [saveRollApi, data, loadState] = useApi<{ students: Activity[] }>({ url: "save-roll" })
   const saveRollState = () => {
-    saveRollApi(attendance).then((res) => console.log({ res }))
+    saveRollApi(attendance)
   }
 
   useEffect(() => {
     console.log({ data })
   }, [data])
 
+  useEffect(() => {
+    if (loadState === "loaded") {
+      onItemClick("exit")
+      setshowSnackBar(true)
+    }
+  }, [loadState])
+
   return (
     <S.Overlay isActive={isActive}>
+      <Snackbar open={showSnackBar} autoHideDuration={6000} onClose={() => setshowSnackBar(false)}>
+        <span style={{ backgroundColor: loadState === "loaded" ? "green" : "red", padding: "1rem" }}>
+          {loadState === "loaded" ? "Roll state saved successfully! 🎉" : "There was a problem saving the roll state! 🥵"}
+        </span>
+      </Snackbar>
       <S.Content>
         <div>Class Attendance</div>
         <div>

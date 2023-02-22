@@ -76,6 +76,7 @@ export const HomeBoardPage: React.FC = () => {
   const onActiveRollAction = (action: ActiveRollAction) => {
     if (action === "exit") {
       setIsRollMode(false)
+      setAttendance({ student_roll_states: [] })
     }
   }
 

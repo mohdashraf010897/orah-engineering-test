@@ -221,6 +221,7 @@ export const ActivityPage: React.FC = () => {
   const rows = createRows()
   return (
     <S.Container>
+      <h1>Activity Tracker</h1>
       <Dialog open={modalVisible} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
         <List style={{ width: "300px", paddingLeft: "10px" }}>
           <h3>Name List</h3>
@@ -231,7 +232,7 @@ export const ActivityPage: React.FC = () => {
           ))}
         </List>
       </Dialog>
-      <TableContainer component={Paper}>
+      <S.StyledTableContainer component={Paper}>
         <Table aria-label="simple table">
           <EnhancedTableHead order={order} orderBy={orderBy} onRequestSort={handleRequestSort} rowCount={rows.length} />
           <TableBody>
@@ -266,7 +267,7 @@ export const ActivityPage: React.FC = () => {
             ))}
           </TableBody>
         </Table>
-      </TableContainer>
+      </S.StyledTableContainer>
     </S.Container>
   )
 }
@@ -275,13 +276,20 @@ const S = {
   Container: styled.div`
     display: flex;
     flex-direction: column;
-    width: 50%;
+    width: 100%;
     margin: ${Spacing.u4} auto 0;
+    align-items: center;
   `,
   RoundButton: styled(Button)`
     && {
       border-radius: 50%;
       min-width: unset;
+    }
+  `,
+  StyledTableContainer: styled(TableContainer)`
+    && {
+      width: 70vw;
+      margin: auto;
     }
   `,
 }
